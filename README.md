@@ -56,6 +56,19 @@ Accounts:
 ### `guardians_set`
 TODO
 
+### `transaction_execute`
+Execute a generic transaction on behalf of a `wallet`. Must be signed by the `owner` of the `wallet`.
+
+Accounts:
+- `owner` - the owner of the wallet.
+- `wallet` - the wallet PDA to be used to execute the transaction.
+
+Remaining accounts:
+- Additional signers that are required by the transaction.
+
+Params:
+- `instructions: Vec<solana_program::instruction::Instruction>` - the instructions to be executed in the transaction.
+
 ### `recovery_initiate`
 Initiates a recovery request that later needs to be approved by the `guardians`.
 Anyone can create a recovery request, and the only thing that distinguishes requests is their `uid` which needs
