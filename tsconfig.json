@@ -2,7 +2,10 @@
   "compilerOptions": {
     "types": ["mocha", "chai"],
     "typeRoots": ["./node_modules/@types"],
-    "lib": ["es2015"],
+    "lib": [
+      "ES2021",
+      "dom"
+    ],
     "module": "esnext",
     "target": "es2021",
     "moduleResolution": "Node",

@@ -12,3 +12,5 @@ wallet = "~/.config/solana/localnet.json"
 
 [scripts]
 test = "yarn run ts-mocha -n loader=ts-node/esm -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+# Use the line below to debug the tests.
+#test = "yarn run ts-mocha -n loader=ts-node/esm inspect -p ./tsconfig.json -t 1000000 tests/**/*.ts"

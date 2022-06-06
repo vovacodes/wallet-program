@@ -38,8 +38,10 @@ Accounts:
 - `payer (signer)` - the account paying the transaction and rent fees.
 - `owner` - the owner of the wallet.
 - `wallet` - wallet PDA with seeds `["wallet", uid]`.
+- `system_program` - the system program that is used to create the wallet.
 
 Params:
+- `uid: String` - unique identifier for the `wallet`. Must consist of 6 alphanumerical characters.
 - `guardians_size: u8` - the size of the `guardians` vector.
   **NOTE:** The bigger the size the higher the account creation fee. This cannot be changed after the wallet creation,
             you can only set the number of `guardians` less than or equals to this number. So choose wisely.
