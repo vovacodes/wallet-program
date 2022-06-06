@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import anchor from "@project-serum/anchor";
+import anchor, { AnchorError } from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { WalletProgram } from "../target/types/wallet_program";
 import { createUid } from "./utils.js";
@@ -64,6 +64,40 @@ describe("wallet-program", () => {
 
       // updatedAt ("just now")
       assert.ok(Date.now() - walletData.updatedAt.toNumber() * 1000 < 2000);
+    });
+
+    it("should throw if invalid `uid` is passed", async () => {
+      const uid = "INVALID";
+      const recoveryGracePeriod = new anchor.BN(24 * 60 * 60);
+
+      const [wallet] = await PublicKey.findProgramAddress(
+        [utf8Codec.encode("wallet"), utf8Codec.encode(uid)],
+        program.programId
+      );
+
+      await assert.rejects(
+        () =>
+          program.methods
+            .walletCreate({
+              uid,
+              numGuardians: 6,
+              recoveryGracePeriod,
+            })
+            .accounts({
+              payer: provider.wallet.publicKey,
+              owner: new Keypair().publicKey,
+              wallet,
+              systemProgram: anchor.web3.SystemProgram.programId,
+            })
+            .rpc(),
+        (err: AnchorError) => {
+          assert.match(
+            err.message,
+            /UID must consist of 6 alphanumerical characters/
+          );
+          return true;
+        }
+      );
     });
   });
 });

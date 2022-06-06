@@ -57,6 +57,7 @@ pub fn wallet_create(ctx: Context<WalletCreate>, args: WalletCreateArgs) -> Resu
         .as_bytes()
         .try_into()
         .map_err(|_| WalletError::InvalidUID)?;
+    msg!("{:?}", &wallet.uid);
     wallet.owner = ctx.accounts.owner.key();
     wallet.guardians = vec![Pubkey::default(); args.num_guardians as usize];
     wallet.recovery_grace_period = args.recovery_grace_period;
