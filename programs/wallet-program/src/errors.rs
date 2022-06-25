@@ -4,4 +4,7 @@ use anchor_lang::prelude::*;
 pub enum WalletError {
     #[msg("UID must consist of 6 alphanumerical characters")]
     InvalidUID,
+
+    #[msg("Unauthorized")]
+    Unauthorized,
 }

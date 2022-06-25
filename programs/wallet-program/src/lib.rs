@@ -1,6 +1,7 @@
+mod constants;
 mod errors;
 mod instructions;
-mod state;
+mod structs;
 
 use anchor_lang::prelude::*;
 
@@ -14,5 +15,12 @@ pub mod wallet_program {
 
     pub fn wallet_create(ctx: Context<WalletCreate>, args: WalletCreateArgs) -> Result<()> {
         instructions::wallet_create(ctx, args)
+    }
+
+    pub fn transaction_execute(
+        ctx: Context<TransactionExecute>,
+        args: TransactionExecuteArgs,
+    ) -> Result<()> {
+        instructions::transaction_execute(ctx, args)
     }
 }

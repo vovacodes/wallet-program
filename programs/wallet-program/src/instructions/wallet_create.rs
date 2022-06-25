@@ -1,9 +1,8 @@
 use anchor_lang::prelude::*;
 
+use crate::constants::WALLET_SEED;
 use crate::errors::WalletError;
-use crate::state::Wallet;
-
-const WALLET_SEED: &[u8] = b"wallet";
+use crate::structs::accounts::Wallet;
 
 #[derive(Accounts)]
 #[instruction(args: WalletCreateArgs)]
@@ -52,6 +51,7 @@ pub struct WalletCreateArgs {
 pub fn wallet_create(ctx: Context<WalletCreate>, args: WalletCreateArgs) -> Result<()> {
     let wallet = &mut ctx.accounts.wallet;
 
+    wallet.bump = *ctx.bumps.get("wallet").unwrap();
     wallet.uid = args
         .uid
         .as_bytes()

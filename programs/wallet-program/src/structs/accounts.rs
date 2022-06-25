@@ -1,7 +1,12 @@
+//! This module contains anchor `account` structs used by the program.
+
 use anchor_lang::prelude::*;
 
 #[account]
 pub struct Wallet {
+    /// The PDA's bump.
+    pub bump: u8,
+
     /// UID of the wallet.
     pub uid: [u8; 6],
 
@@ -25,6 +30,8 @@ impl Wallet {
     pub fn size_of(num_guardians: u8) -> usize {
         // account discriminator
         8 +
+        // bump
+        1 +
         // uid
         6 +
         // owner
