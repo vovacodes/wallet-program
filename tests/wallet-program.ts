@@ -212,6 +212,123 @@ describe("wallet-program", () => {
         receiverWsolAta
       );
       assert.equal(receiverWsolTokenAccountData.amount, 0.5 * LAMPORTS_PER_SOL);
+
+      // Fails when owner is fake.
+      const fakeOwner = Keypair.generate();
+      await assert.rejects(
+        () =>
+          program.methods
+            .transactionExecute({
+              instructions: [
+                // transfer WSOL
+                createTransferInstruction(
+                  walletWsolAta,
+                  receiverWsolAta,
+                  wallet,
+                  0.1 * LAMPORTS_PER_SOL
+                ),
+              ],
+            })
+            .accounts({ owner: fakeOwner.publicKey, wallet })
+            // All accounts required by `instructions` are passed here.
+            .remainingAccounts([
+              { pubkey: wallet, isSigner: false, isWritable: false },
+              { pubkey: walletWsolAta, isSigner: false, isWritable: true },
+              { pubkey: receiverWsolAta, isSigner: false, isWritable: true },
+              { pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
+            ])
+            .signers([fakeOwner])
+            .rpc(),
+        /Unauthorized/
+      );
+    });
+  });
+
+  describe("guardians_set", () => {
+    it("should set `guardians` of the `wallet`", async () => {
+      // Create wallet.
+      const owner = new Keypair();
+      const uid = createUid();
+      const recoveryGracePeriod = new BN(24 * 60 * 60);
+      const [wallet] = await PublicKey.findProgramAddress(
+        [utf8.encode("wallet"), utf8.encode(uid)],
+        program.programId
+      );
+      await program.methods
+        .walletCreate({
+          uid,
+          numGuardians: 7,
+          recoveryGracePeriod,
+        })
+        .accounts({
+          payer: provider.wallet.publicKey,
+          owner: owner.publicKey,
+          wallet,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+      let walletData = await program.account.wallet.fetch(wallet);
+      const initialUpdatedAt = walletData.updatedAt.toNumber();
+
+      // Make sure at least 1 second passes between the creation of the wallet and setting its `guardians`.
+      await new Promise((res) => setTimeout(res, 1000));
+
+      // Set empty guardians.
+      await program.methods
+        .guardiansSet({ guardians: [] })
+        .accounts({
+          owner: owner.publicKey,
+          wallet,
+        })
+        .signers([owner])
+        .rpc();
+
+      walletData = await program.account.wallet.fetch(wallet);
+      assert.deepEqual(walletData.guardians, []);
+      assert.ok(walletData.updatedAt.toNumber() > initialUpdatedAt);
+
+      // Set less than max number of guardians.
+      let guardians = [Keypair.generate().publicKey];
+      await program.methods
+        .guardiansSet({ guardians })
+        .accounts({
+          owner: owner.publicKey,
+          wallet,
+        })
+        .signers([owner])
+        .rpc();
+
+      walletData = await program.account.wallet.fetch(wallet);
+      assert.deepEqual(walletData.guardians, guardians);
+
+      // Set max number of guardians.
+      guardians = Array.from({ length: 7 }, () => Keypair.generate().publicKey);
+      await program.methods
+        .guardiansSet({ guardians })
+        .accounts({
+          owner: owner.publicKey,
+          wallet,
+        })
+        .signers([owner])
+        .rpc();
+
+      walletData = await program.account.wallet.fetch(wallet);
+      assert.deepEqual(walletData.guardians, guardians);
+
+      // Fails when setting more than max number of guardians.
+      guardians = Array.from({ length: 8 }, () => Keypair.generate().publicKey);
+      await assert.rejects(
+        () =>
+          program.methods
+            .guardiansSet({ guardians })
+            .accounts({
+              owner: owner.publicKey,
+              wallet,
+            })
+            .signers([owner])
+            .rpc(),
+        /Failed to serialize the account/
+      );
     });
   });
 });

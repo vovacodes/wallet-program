@@ -21,7 +21,7 @@ pub struct Wallet {
     /// can be cancelled by the existing `owner`.
     pub recovery_grace_period: i64,
 
-    /// The last time (unix timestamp) the wallet config was updated.
+    /// The last time (unix timestamp in seconds) the wallet config was updated.
     /// All recovery requests that were initiated prior to this moment are invalid and can only be cancelled.
     pub updated_at: i64,
 }

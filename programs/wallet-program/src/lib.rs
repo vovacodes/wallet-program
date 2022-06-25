@@ -17,6 +17,10 @@ pub mod wallet_program {
         instructions::wallet_create(ctx, args)
     }
 
+    pub fn guardians_set(ctx: Context<GuardiansSet>, args: GuardiansSetArgs) -> Result<()> {
+        instructions::guardians_set(ctx, args)
+    }
+
     pub fn transaction_execute(
         ctx: Context<TransactionExecute>,
         args: TransactionExecuteArgs,

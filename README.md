@@ -43,26 +43,27 @@ Accounts:
 Params:
 - `uid: String` - unique identifier for the `wallet`. Must consist of 6 alphanumerical characters.
 - `guardians_size: u8` - the size of the `guardians` vector.
-  **NOTE:** The bigger the size the higher the account creation fee. This cannot be changed after the wallet creation,
-            you can only set the number of `guardians` less than or equals to this number. So choose wisely.
+                         **NOTE:** The bigger the size the higher the account creation fee.
+                         This cannot be changed after the wallet creation, you can only set
+                         the number of `guardians` less than or equals to this number. So choose wisely.
 - `recovery_grace_period: i64` - the grace period (seconds) that has to pass between the approval of a `Recovery`
    and the moment the new `owner` is set. During this period, the recovery request can be cancelled by the existing `owner`.
 
-### `guardian_add`
-Invites a new `guardian` to the wallet. This instruction is expected to be pre-signed by the `owner` of the wallet
-and sent over to the `guardian` that only needs to sign it but pay no costs. So it should be free for the `guardian`.
+### `guardians_set`
+Sets the `guardians` array of a `Wallet`. Must be signed by the wallet's `owner`.
 
 Accounts:
-- `guardian (signer)` - the guardian to be invited to the wallet.
+- `owner (signer)` - the owner of the wallet.
+- `wallet` - the wallet PDA.
 
-### `guardians_set`
-TODO
+Params:
+- `guardians: Vec<Pubkey>` - the array of new wallet `guardians`.
 
 ### `transaction_execute`
 Execute a generic transaction on behalf of a `wallet`. Must be signed by the `owner` of the `wallet`.
 
 Accounts:
-- `owner` - the owner of the wallet.
+- `owner (signer)` - the owner of the wallet.
 - `wallet` - the wallet PDA to be used to execute the transaction.
 
 Remaining accounts:
@@ -75,6 +76,9 @@ Params:
 Initiates a recovery request that later needs to be approved by the `guardians`.
 Anyone can create a recovery request, and the only thing that distinguishes requests is their `uid` which needs
 to be communicated by the owner to all `guardians` through a safe off-chain channel.
+The initiated `Recovery` is valid while `recovery.initiated_at > wallet.updated_at`
+and `recovery.initiated_at + recovery.max_age > now` if `max_age` is not `0`. 
+Fails if the `guardians` array is empty.
 
 Accounts:
 - `payer (signer)` - the account paying the transaction and rent fees.
